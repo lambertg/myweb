@@ -3,7 +3,7 @@ pipeline{
   environment{
     PATH = "/opt/maven3/bin:$PATH"
   }
-  states{
+  stages{
     stage("Git Checkout"){
       steps{
         git credentialsId: 'gitID', url: 'https://github.com/lambertg/myweb'
