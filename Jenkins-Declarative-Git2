@@ -1,0 +1,18 @@
+pipeline{
+  agent any
+  environment{
+    PATH = "/opt/maven3/bin:$PATH"
+  }
+  states{
+    stage("Git Checkout"){
+      steps{
+        git credentialsId: 'gitID', url: 'https://github.com/lambertg/myweb'
+      }
+    }
+    stage("Mavin Build"){
+      steps{
+        sh "mvm clean package"
+      }
+    }
+  }
+}
