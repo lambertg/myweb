@@ -1,31 +1,35 @@
 pipeline{
-  agent any
-  environment{
-    PATH = "/opt/maven3/bin:$PATH"
-  }
-  stages{
-    stage("Git Checkout"){
-      steps{
-        git credentialsId: 'gitID', url: 'https://github.com/lambertg/myweb'
-      }
+    agent any
+    
+    environment{
+        PATH = "/opt/maven3/bin:$PATH"
     }
-    stage("Mavin Build"){
-      steps{
-        sh "mvn clean package"
-				sh "mv target/*.war target/web-app.war"
-      }
+    stages{
+        stage("Git Checkout"){
+            steps{
+                git credentialsId: 'github', url: 'https://github.com/javahometech/myweb'
+            }
+        }
+        stage("Maven Build"){
+            steps{
+                sh "mvn clean package"
+                sh "mv target/*.war target/myweb.war"
+            }
+        }
+        stage("deploy-dev"){
+            steps{
+                sshagent(['tomcat-new']) {
+                sh """
+                    scp -o StrictHostKeyChecking=no target/myweb.war  ec2-user@172.31.5.176:/opt/tomcat8/webapps/
+                    
+                    ssh ec2-user@172.31.5.176 /opt/tomcat8/bin/shutdown.sh
+                    
+                    ssh ec2-user@172.31.5.176 /opt/tomcat8/bin/startup.sh
+                
+                """
+            }
+            
+            }
+        }
     }
-	 stage("deploy dev"){
-			steps{
-        sshagent(['tomcat-key']) {
-            	sh "scp -o StrictHostKeyChecking=no webapp/target/web-app.war ec2-user@172.31.62.103:/opt/tomcat8/webapps"
-            	sh "ssh ec2-user@52.91.88.197 /opt/tomcat8/bin/shutdown.sh"
-            	sh "sh ec2-user@52.91.88.197 /opt/tomcat8/bin/startup.sh"
-          }
-       
-				}
-			}
-  	}
 }
-
- 
